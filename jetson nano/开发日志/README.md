@@ -1,90 +1,127 @@
 # Jetson Nano B01 开发板配置与应用指南
 
-欢迎使用Jetson Nano B01开发板配置与应用指南！本指南旨在帮助您从零开始配置、使用和开发Jetson Nano B01，无论您是初学者还是有经验的开发者，都能找到有用的信息。
+<div align="center">
+    <img src="https://developer.nvidia.com/sites/default/files/akamai/embedded/images/jetsonNano/JetsonNano-DevKit_Front-Top_Right_trimmed.jpg" alt="Jetson Nano B01" width="400"/>
+    <p><em>NVIDIA Jetson Nano B01 - 边缘AI计算平台</em></p>
+</div>
 
-## 快速开始流程
+## 📚 文档导航
 
-对于新用户，建议按照以下流程进行Jetson Nano B01的配置和使用：
+本项目记录了使用Jetson Nano B01进行AI和嵌入式开发的完整历程。无论您是初学者还是有经验的开发者，都能从中获取有价值的信息与经验。
 
-1. **了解硬件** - 熟悉Jetson Nano B01的硬件规格和接口布局
-2. **准备SD卡** - 下载系统镜像并烧录到SD卡
-3. **系统初始化** - 首次启动并设置系统
-4. **配置网络连接** - 设置有线或无线网络
-5. **远程访问设置** - 配置SSH、VNC或串口访问
-6. **开发环境配置** - 安装和配置开发工具和库
-7. **性能优化** - 根据应用需求优化系统性能
-8. **运行示例应用** - 尝试示例应用以验证配置
+### 🔰 核心文档
 
-## 新用户指南
+按照以下推荐顺序阅读，可以从零开始快速掌握Jetson Nano的配置与使用：
 
-### 第一步：硬件检查
+1. [**硬件了解**](hardware.md) - 详细了解Jetson Nano B01的硬件规格和接口布局
+2. [**系统安装**](system-installation.md) - 从系统镜像烧录到首次启动配置的完整指南
+3. [**网络配置**](network-configuration.md) - 有线和无线网络设置方法详解
+4. [**远程访问**](remote-access.md) - SSH、VNC和串口连接的配置步骤
+5. [**开发环境**](development-environment.md) - 搭建AI和机器视觉开发所需的软件环境
+6. [**性能优化**](performance-optimization.md) - 让您的Jetson Nano发挥最佳性能
+7. [**应用开发**](applications.md) - 计算机视觉、机器学习和IoT应用开发实例
 
-确保您已经获得以下必要组件：
+### 📋 实用操作指南
+
+这些文档包含了实际开发过程中积累的经验和解决方案：
+
+- [**初始配置与环境搭建**](initial-setup.md) - 网络设置、系统优化与软件配置
+- [**系统管理与SSH配置**](system-management.md) - SSH多账户管理、软件管理与风扇控制
+- [**开发流程指南**](development-workflow.md) - 完整的开发时间线与方法论
+- [**故障排除**](troubleshooting.md) - 常见问题的解决方案
+
+### 📊 项目概览
+
+- [**项目总结**](project-summary.md) - Jetson Nano项目的整体架构和成果概述
+
+---
+
+## ⚡ 快速入门
+
+### 硬件准备清单
 
 - Jetson Nano B01开发板
-- 符合要求的电源（5V/4A DC电源适配器或支持5V/2A的Micro-USB电源）
-- 16GB或更大的microSD卡（建议使用Class 10或更高速度等级）
-- 以太网线缆或兼容的WiFi适配器
-- 散热解决方案（散热器或风扇）
+- 高质量电源（建议5V/4A DC电源适配器）
+- 16GB或更大的microSD卡（Class 10或UHS-I速度等级）
+- 有线网络或兼容的WiFi适配器
+- HDMI显示器、USB键盘和鼠标
+- 散热器和风扇（强烈推荐）
 
-### 第二步：系统安装
+### 首次启动流程
 
-1. 下载官方Jetson Nano系统镜像
-2. 使用balenaEtcher等工具将系统镜像烧录到SD卡
-3. 将SD卡插入Jetson Nano B01并连接电源
-4. 按照屏幕提示完成系统初始设置
+1. **准备SD卡**
+   ```bash
+   # 使用balenaEtcher或DD命令烧录系统镜像
+   sudo dd if=jetson-nano-sd-card-image.img of=/dev/sdX bs=1M status=progress
+   ```
 
-### 第三步：网络配置
+2. **连接必要设备**
+   - 将SD卡插入设备底部
+   - 连接显示器、键盘、鼠标和网线
+   - 连接电源适配器
 
-1. 连接以太网电缆实现即插即用的网络连接，或
-2. 配置WiFi连接（需要兼容的WiFi适配器）
-3. 设置静态IP地址（可选，但推荐用于远程开发）
+3. **初始化设置**
+   - 设置用户名密码（默认: jetson/jetson）
+   - 配置时区和语言
+   - 更新系统软件包
 
-### 第四步：开发环境设置
+4. **开发环境配置**
+   ```bash
+   # 系统更新
+   sudo apt update && sudo apt upgrade -y
+   
+   # 安装基本开发工具
+   sudo apt install -y build-essential cmake git python3-pip
+   ```
 
-1. 更新系统软件包
-2. 安装开发工具和库
-3. 配置Python环境和机器学习框架
-4. 设置远程开发工具（如VS Code远程开发）
+---
 
-## 专题指南
+## 💡 常见问题解答
 
-以下是详细的专题文档，涵盖Jetson Nano B01的各个方面：
+<details>
+<summary><b>系统无法启动怎么办？</b></summary>
+<p>
+检查电源是否稳定供电，SD卡是否正确插入。如果问题依旧，可能需要重新烧录系统镜像或参考<a href="troubleshooting.md#系统启动问题">故障排除指南</a>。
+</p>
+</details>
 
-### 基础配置
+<details>
+<summary><b>如何优化系统性能？</b></summary>
+<p>
+Jetson Nano支持多种功耗模式，可通过<code>sudo nvpmodel -m 0</code>命令切换到高性能模式。更多优化方法请参考<a href="performance-optimization.md">性能优化指南</a>。
+</p>
+</details>
 
-- [硬件规格与接口说明](hardware.md) - 详细了解Jetson Nano B01的硬件特性
-- [系统安装指南](system-installation.md) - 系统选择、烧录和初始化的详细步骤
-- [网络配置指南](network-configuration.md) - 有线和无线网络设置方法
-- [远程访问配置](remote-access.md) - SSH、VNC和串口连接设置
+<details>
+<summary><b>远程开发如何配置？</b></summary>
+<p>
+推荐使用SSH和VNC进行远程访问。配置方法：<br>
+- SSH: <code>sudo apt install openssh-server</code><br>
+- VNC: <code>sudo apt install vino</code><br>
+详细步骤请查看<a href="remote-access.md">远程访问配置</a>。
+</p>
+</details>
 
-### 开发与优化
+<details>
+<summary><b>摄像头不工作？</b></summary>
+<p>
+USB摄像头应自动识别。CSI摄像头需确保连接正确并运行<code>v4l2-ctl --list-devices</code>检查识别情况。详见<a href="applications.md#配置摄像头">应用开发指南</a>。
+</p>
+</details>
 
-- [开发环境配置](development-environment.md) - 配置各种开发工具和框架
-- [性能优化指南](performance-optimization.md) - 系统性能调优和资源优化
-- [应用开发指南](applications.md) - 计算机视觉、机器学习和IoT应用开发
-- [故障排除指南](troubleshooting.md) - 常见问题的解决方案
+---
 
-## 常见问题
-
-- **系统无法启动怎么办？** - 参考[故障排除指南：系统启动问题](troubleshooting.md#系统启动问题)
-- **如何优化系统性能？** - 参考[性能优化指南](performance-optimization.md)
-- **如何连接摄像头？** - 参考[应用开发指南：计算机视觉应用](applications.md#计算机视觉应用)
-- **如何远程访问Jetson Nano？** - 参考[远程访问配置](remote-access.md)
-- **如何安装深度学习框架？** - 参考[开发环境配置：AI与计算机视觉库安装](development-environment.md#ai与计算机视觉库安装)
-
-## 参考资源
+## 📚 参考资源
 
 - [NVIDIA Jetson Nano官方文档](https://developer.nvidia.com/embedded/jetson-nano-developer-kit)
 - [JetsonHacks教程和指南](https://www.jetsonhacks.com/category/jetson-nano/)
 - [NVIDIA开发者论坛](https://forums.developer.nvidia.com/c/agx-autonomous-machines/jetson-embedded-systems/jetson-nano/76)
+- [PyImageSearch Jetson Nano教程](https://www.pyimagesearch.com/category/jetson-nano/)
+- [Jetson AI Certification项目](https://developer.nvidia.com/embedded/learn/jetson-ai-certification-programs)
 
-## 贡献
+---
 
-欢迎通过以下方式对本指南进行贡献：
-
-- 提交问题报告和改进建议
-- 分享您的经验和解决方案
-- 提供文档更新和补充
-
-感谢您使用本指南，祝您在Jetson Nano B01的开发过程中取得成功！ 
+<div align="center">
+    <p>📝 本文档不断完善中 | 欢迎提出建议和改进意见</p>
+    <p>最后更新: 2025年3月31日</p>
+</div> 

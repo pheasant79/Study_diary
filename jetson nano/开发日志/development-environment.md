@@ -1,29 +1,39 @@
 # Jetson Nano B01 开发环境配置
 
 ## 目录
-- [系统更新与基础软件安装](#系统更新与基础软件安装)
-  - [常用系统工具](#常用系统工具)
-  - [安装Jetson系统监控工具](#安装jetson系统监控工具)
-- [AI与计算机视觉库安装](#ai与计算机视觉库安装)
-  - [CUDA和cuDNN](#cuda和cudnn)
-  - [安装OpenCV](#安装opencv)
-  - [安装TensorFlow](#安装tensorflow)
-  - [安装PyTorch](#安装pytorch)
-  - [安装特定版本的深度学习框架](#安装特定版本的深度学习框架)
-- [Python开发环境配置](#python开发环境配置)
-  - [创建和使用虚拟环境](#创建和使用虚拟环境)
-  - [安装常用数据科学库](#安装常用数据科学库)
-  - [配置Jupyter Notebook](#配置jupyter-notebook)
-- [其他编程语言支持](#其他编程语言支持)
-  - [C/C++开发环境](#cc开发环境)
-  - [Node.js开发环境](#nodejs开发环境)
-  - [Go语言环境](#go语言环境)
-- [开发工具安装](#开发工具安装)
-  - [安装和配置VSCode（通过远程开发）](#安装和配置vscode通过远程开发)
-  - [设置交叉编译环境（可选）](#设置交叉编译环境可选)
-- [安装和配置Git](#安装和配置git)
-- [设置数据库（可选）](#设置数据库可选)
-  - [SQLite](#sqlite)
+- [Jetson Nano B01 开发环境配置](#jetson-nano-b01-开发环境配置)
+  - [目录](#目录)
+  - [系统更新与基础软件安装](#系统更新与基础软件安装)
+    - [常用系统工具](#常用系统工具)
+    - [安装Jetson系统监控工具](#安装jetson系统监控工具)
+  - [AI与计算机视觉库安装](#ai与计算机视觉库安装)
+    - [CUDA和cuDNN](#cuda和cudnn)
+    - [安装OpenCV](#安装opencv)
+    - [安装TensorFlow](#安装tensorflow)
+    - [安装PyTorch](#安装pytorch)
+    - [安装特定版本的深度学习框架](#安装特定版本的深度学习框架)
+  - [Python开发环境配置](#python开发环境配置)
+    - [创建和使用虚拟环境](#创建和使用虚拟环境)
+    - [安装常用数据科学库](#安装常用数据科学库)
+    - [配置Jupyter ServerApp](#配置jupyter-serverapp)
+  - [其他编程语言支持](#其他编程语言支持)
+    - [C/C++开发环境](#cc开发环境)
+    - [Node.js开发环境](#nodejs开发环境)
+    - [Go语言环境](#go语言环境)
+  - [开发工具安装](#开发工具安装)
+    - [安装和配置VSCode（通过远程开发）](#安装和配置vscode通过远程开发)
+    - [设置交叉编译环境（可选）](#设置交叉编译环境可选)
+  - [安装和配置Git](#安装和配置git)
+  - [设置数据库（可选）](#设置数据库可选)
+    - [SQLite](#sqlite)
+    - [PostgreSQL](#postgresql)
+  - [深度学习框架加速技巧](#深度学习框架加速技巧)
+    - [TensorRT优化](#tensorrt优化)
+    - [使用半精度(FP16)加速](#使用半精度fp16加速)
+  - [常见问题与解决方案](#常见问题与解决方案)
+    - [Python库安装失败](#python库安装失败)
+    - [CUDA相关错误](#cuda相关错误)
+  - [结语](#结语)
 
 本文档详细介绍如何在Jetson Nano B01上配置各种开发环境，包括系统更新、基础开发工具安装、AI和计算机视觉库配置，以及各种编程语言的支持。
 
@@ -164,21 +174,34 @@ pip3 install scikit-learn scikit-image
 pip3 install jupyter jupyterlab
 ```
 
-### 配置Jupyter Notebook
+### 配置Jupyter ServerApp
 
 ```bash
 # 生成配置文件
-jupyter notebook --generate-config
+jupyter ServerApp --generate-config
 
 # 设置远程访问密码
-jupyter notebook password
+jupyter server password
+
+# 修改配置文件
+nano ~/.jupyter/jupyter_notebook_config.py
 
 # 配置允许远程访问
-echo "c.NotebookApp.ip = '0.0.0.0'" >> ~/.jupyter/jupyter_notebook_config.py
-echo "c.NotebookApp.open_browser = False" >> ~/.jupyter/jupyter_notebook_config.py
+c.ServerApp.allow_origin = '*'
+c.ServerApp.ip = '0.0.0.0'
+c.ServerApp.port = 8890
+c.ServerApp.open_browser = False
 
-# 启动Jupyter Notebook
-jupyter notebook
+# 密钥设置
+c.ServerApp.password_required = True
+c.ServerApp.allow_password_change = False  # 禁用运行时密码修改
+
+# 如果是 JupyterLab 专用配置
+c.ServerApp.default_url = '/lab'  # 设置默认打开 Lab 界面
+
+
+# 启动Jupyter lab
+jupyter lab
 ```
 
 ## 其他编程语言支持

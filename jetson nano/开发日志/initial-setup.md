@@ -1,5 +1,26 @@
 # Jetson Nano 初始配置与环境搭建
 
+## 目录
+- [📌 主要内容](#-主要内容)
+- [🌐 网络配置](#-网络配置)
+  - [WiFi连接设置](#wifi连接设置)
+- [🔄 系统优化与软件源配置](#-系统优化与软件源配置)
+  - [更换系统软件源](#更换系统软件源)
+  - [配置pip镜像源](#配置pip镜像源)
+  - [中文输入法安装](#中文输入法安装)
+- [🧪 开发环境验证与性能测试](#-开发环境验证与性能测试)
+  - [Python环境检查](#python环境检查)
+  - [Jetson系统监控工具](#jetson系统监控工具)
+  - [性能模式配置](#性能模式配置)
+  - [GPU性能测试](#gpu性能测试)
+- [🌡️ 散热方案配置](#️-散热方案配置)
+  - [PWM风扇控制](#pwm风扇控制)
+  - [风扇开机自启动设置](#风扇开机自启动设置)
+- [🖥️ 图形界面管理](#️-图形界面管理)
+- [📡 远程访问配置](#-远程访问配置)
+  - [SSH远程连接](#ssh远程连接)
+  - [VNC远程桌面设置](#vnc远程桌面设置)
+
 <div align="center">
     <img src="https://developer.nvidia.com/sites/default/files/akamai/embedded/images/jetsonNano/JetsonNano-DevKit_Front-Top_Right_trimmed.jpg" alt="Jetson Nano B01" width="400"/>
 </div>

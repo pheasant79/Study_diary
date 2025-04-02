@@ -76,6 +76,112 @@
 
 ---
 
+## 💢 最常见且棘手的问题
+
+以下是开发过程中最常遇到且最难解决的问题，提前了解这些问题可以节约大量开发时间：
+
+<details>
+<summary><b>1. USB网络连接不稳定问题</b></summary>
+<p>
+<b>问题：</b>通过USB连接电脑时，连接经常断开或不稳定。<br>
+<b>解决方案：</b>在Windows上设置USB网络的静态IP：<br>
+1. 控制面板 → 网络连接<br>
+2. 右键点击"Remote NDIS Compatible Device"<br>
+3. 选择"属性" → 双击"Internet协议版本4(TCP/IPv4)"<br>
+4. 设置IP地址：192.168.55.100，子网掩码：255.255.255.0，网关：192.168.55.1<br>
+详细步骤请参考<a href="network-configuration.md#设置静态ip解决连接不稳定问题">网络配置文档</a>。
+</p>
+</details>
+
+<details>
+<summary><b>2. WiFi网卡无法识别或连接失败</b></summary>
+<p>
+<b>问题：</b>安装WiFi网卡后无法识别或无法正常连接无线网络。<br>
+<b>解决方案：</b><br>
+1. 确保使用兼容的WiFi网卡（推荐Intel AC8265/9260）<br>
+2. 检查驱动是否正确加载：<code>lspci | grep Network</code><br>
+3. 解除无线网卡阻止：<code>sudo rfkill unblock all</code><br>
+4. 手动连接WiFi：<code>sudo nmcli dev wifi connect "WiFi名称" password "密码"</code><br>
+详情参考<a href="network-configuration.md#无线网络配置">无线网络配置</a>。
+</p>
+</details>
+
+<details>
+<summary><b>3. Ubuntu 20.04系统烧录问题</b></summary>
+<p>
+<b>问题：</b>官方JetPack基于Ubuntu 18.04，但许多用户需要Ubuntu 20.04。<br>
+<b>解决方案：</b><br>
+1. 下载社区版Ubuntu 20.04镜像，如<a href="https://github.com/Qengineering/Jetson-Nano-Ubuntu-20-image">QEngineering镜像</a><br>
+2. 解压.xz格式文件得到.img文件<br>
+3. 使用专业烧录工具(如balenaEtcher)将镜像写入SD卡<br>
+4. 默认登录凭据通常为：用户名：<code>jetson</code> 密码：<code>jetson</code><br>
+详情请参考<a href="system-installation.md#系统版本选择">系统安装指南</a>和<a href="system-management.md#下载与烧录系统">系统管理文档</a>。
+</p>
+</details>
+
+<details>
+<summary><b>4. 风扇自启动配置</b></summary>
+<p>
+<b>问题：</b>重启后风扇设置丢失，需要手动启动风扇控制。<br>
+<b>解决方案：</b><br>
+1. 创建开机自启动脚本：<code>sudo gedit /etc/rc.local</code><br>
+2. 添加以下命令：<code>sudo sh -c 'echo 100 > /sys/devices/pwm-fan/target_pwm'</code><br>
+3. 确保文件具有执行权限：<code>sudo chmod 755 /etc/rc.local</code><br>
+或者安装自动风扇控制工具：<code>git clone https://github.com/Pyrestone/jetson-fan-ctl.git</code><br>
+详情请参考<a href="initial-setup.md#风扇开机自启动设置">初始配置文档</a>。
+</p>
+</details>
+
+<details>
+<summary><b>5. Jupyter Notebook配置</b></summary>
+<p>
+<b>问题：</b>远程访问Jupyter Notebook服务失败或配置复杂。<br>
+<b>解决方案：</b><br>
+1. 安装Jupyter：<code>pip3 install jupyter jupyterlab</code><br>
+2. 生成配置文件：<code>jupyter notebook --generate-config</code><br>
+3. 设置远程访问密码：<code>jupyter notebook password</code><br>
+4. 配置允许远程访问：<br>
+   <code>echo "c.NotebookApp.ip = '0.0.0.0'" >> ~/.jupyter/jupyter_notebook_config.py</code><br>
+   <code>echo "c.NotebookApp.open_browser = False" >> ~/.jupyter/jupyter_notebook_config.py</code><br>
+5. 启动服务：<code>jupyter notebook</code><br>
+详情请参考<a href="development-environment.md#配置jupyter-notebook">开发环境配置文档</a>。
+</p>
+</details>
+
+<details>
+<summary><b>6. 多SSH密钥冲突问题</b></summary>
+<p>
+<b>问题：</b>Jetson SSH连接覆盖了GitHub SSH配置，导致无法向GitHub提交代码。<br>
+<b>解决方案：</b><br>
+1. 为Git创建独立的SSH密钥目录：<code>mkdir -p C:\Users\用户名\.ssh\git</code><br>
+2. 生成新的SSH密钥对：<code>ssh-keygen -t rsa -C "你的邮箱地址"</code>（保存到刚创建的目录）<br>
+3. 创建SSH配置文件(<code>C:\Users\用户名\.ssh\config</code>)：<br>
+   ```
+   Host github.com
+     HostName github.com
+     User git
+     IdentityFile C:\Users\用户名\.ssh\git\id_rsa
+     IdentitiesOnly yes
+   ```
+4. 测试连接：<code>ssh -T -v git@github.com</code><br>
+详情请参考<a href="system-management.md#git与jetson的ssh配置冲突解决">系统管理文档</a>。
+</p>
+</details>
+
+<details>
+<summary><b>7. 键盘按键映射错误问题</b></summary>
+<p>
+<b>问题：</b>系统启动后键盘方向键变成了ABCD字母，无法正常使用。<br>
+<b>解决方案：</b><br>
+1. 编辑Vim配置文件：<code>sudo vi /etc/vim/vimrc.tiny</code><br>
+2. 将<code>set compatible</code>改为<code>set nocompatible</code><br>
+3. 添加一行<code>set backspace=2</code><br>
+4. 保存并退出<br>
+这是Vi/Vim配置问题导致的，修改后方向键将正常工作。<br>
+详情请参考<a href="system-management.md#键盘映射问题修复">系统管理文档</a>。
+</p>
+</details>
+
 ## 💡 常见问题解答
 
 <details>

@@ -1,5 +1,36 @@
 # Jetson Nano B01 远程访问指南
 
+## 目录
+- [Jetson Nano B01 远程访问指南](#jetson-nano-b01-远程访问指南)
+  - [目录](#目录)
+  - [为什么需要远程访问？](#为什么需要远程访问)
+  - [SSH远程连接](#ssh远程连接)
+    - [准备工作](#准备工作)
+    - [查找Jetson Nano的IP地址](#查找jetson-nano的ip地址)
+    - [使用SSH客户端连接](#使用ssh客户端连接)
+      - [Windows系统](#windows系统)
+      - [Linux/macOS系统](#linuxmacos系统)
+    - [配置SSH密钥认证（可选但推荐）](#配置ssh密钥认证可选但推荐)
+    - [通过USB连接SSH](#通过usb连接ssh)
+    - [SSH连接问题排查](#ssh连接问题排查)
+  - [VNC远程桌面访问](#vnc远程桌面访问)
+    - [安装和配置VNC服务器](#安装和配置vnc服务器)
+    - [连接到VNC服务器](#连接到vnc服务器)
+    - [VNC故障排除](#vnc故障排除)
+  - [串口连接（UART）](#串口连接uart)
+    - [硬件连接](#硬件连接)
+    - [软件设置](#软件设置)
+    - [串口连接参数](#串口连接参数)
+  - [文件传输方法](#文件传输方法)
+    - [使用SCP传输文件](#使用scp传输文件)
+    - [使用SFTP进行文件管理](#使用sftp进行文件管理)
+    - [使用rsync进行同步](#使用rsync进行同步)
+    - [使用finalshell(推荐)](#使用finalshell推荐)
+  - [使用VS Code远程开发（推荐）](#使用vs-code远程开发推荐)
+  - [关闭图形界面以节省资源](#关闭图形界面以节省资源)
+  - [安全注意事项](#安全注意事项)
+  - [结语](#结语)
+
 本文档详细介绍如何远程访问和控制Jetson Nano B01开发板，包括SSH、VNC和串口连接等方式，让您无需直接连接显示器和键盘鼠标即可操作设备。
 
 ## 为什么需要远程访问？
@@ -42,6 +73,8 @@
    # Windows
    # 使用高级IP扫描器等工具
    ```
+4. **如果连接的是电脑热点**
+可以在设置->网络->个人热点->下面的连接设备上,看到jetson nano的无线网卡ip
 
 ### 使用SSH客户端连接
 
@@ -59,6 +92,7 @@
    ```powershell
    ssh nvidia@192.168.1.xxx  # 替换为实际IP地址
    ```
+3.**xshell和finalshell**
 
 #### Linux/macOS系统
 
@@ -326,6 +360,9 @@ rsync -avz /path/to/local/directory/ nvidia@192.168.1.xxx:/path/to/remote/direct
 # 从Jetson Nano同步到本地
 rsync -avz nvidia@192.168.1.xxx:/path/to/remote/directory/ /path/to/local/directory/
 ```
+
+### 使用finalshell(推荐)
+用finalshell连接后,直接将文件进行拖拽就可以实现文件的传输
 
 ## 使用VS Code远程开发（推荐）
 

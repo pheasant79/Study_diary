@@ -16,6 +16,22 @@
     - [创建和使用虚拟环境](#创建和使用虚拟环境)
     - [安装常用数据科学库](#安装常用数据科学库)
     - [配置Jupyter ServerApp](#配置jupyter-serverapp)
+  - [Jupyter开机自启动设置](#jupyter开机自启动设置)
+- [Jetson Nano 配置 Jupyter Lab 远程访问与开机自启](#jetson-nano-配置-jupyter-lab-远程访问与开机自启)
+  - [📦 1. 安装 Jupyter Lab](#-1-安装-jupyter-lab)
+  - [🧷 2. 生成配置文件](#-2-生成配置文件)
+  - [🔐 3. 设置远程访问密码](#-3-设置远程访问密码)
+  - [⚙️ 4. 编辑配置文件](#️-4-编辑配置文件)
+  - [🚀 5. 启动 Jupyter Lab 测试](#-5-启动-jupyter-lab-测试)
+  - [🔁 6. 设置开机自启动（使用 systemd）](#-6-设置开机自启动使用-systemd)
+    - [① 查看 jupyter 可执行路径](#-查看-jupyter-可执行路径)
+    - [② 创建启动服务文件](#-创建启动服务文件)
+    - [③ 启用服务并启动](#-启用服务并启动)
+    - [④ 检查状态](#-检查状态)
+  - [📡 7. 浏览器访问 Jupyter Lab](#-7-浏览器访问-jupyter-lab)
+  - [🛠 8. 调试与日志查看](#-8-调试与日志查看)
+  - [🧯 常见问题排查](#-常见问题排查)
+  - [✅ 效果展示](#-效果展示)
   - [其他编程语言支持](#其他编程语言支持)
     - [C/C++开发环境](#cc开发环境)
     - [Node.js开发环境](#nodejs开发环境)
@@ -176,6 +192,9 @@ pip3 install jupyter jupyterlab
 
 ### 配置Jupyter ServerApp
 
+<details>
+<summary>Jupyter ServerApp 基础配置</summary>
+
 ```bash
 # 生成配置文件
 jupyter ServerApp --generate-config
@@ -203,6 +222,178 @@ c.ServerApp.default_url = '/lab'  # 设置默认打开 Lab 界面
 # 启动Jupyter lab
 jupyter lab
 ```
+</details>
+
+## Jupyter开机自启动设置
+
+<details>
+<summary>Jetson Nano 配置 Jupyter Lab 远程访问与开机自启的完整教程</summary>
+
+# Jetson Nano 配置 Jupyter Lab 远程访问与开机自启
+
+## 📦 1. 安装 Jupyter Lab
+
+```bash
+sudo apt update
+pip3 install jupyterlab
+```
+
+## 🧷 2. 生成配置文件
+
+```bash
+jupyter server --generate-config
+```
+
+会生成配置文件：
+```
+~/.jupyter/jupyter_server_config.py
+```
+
+## 🔐 3. 设置远程访问密码
+
+```bash
+jupyter server password
+```
+
+根据提示设置访问密码。
+
+## ⚙️ 4. 编辑配置文件
+
+```bash
+nano ~/.jupyter/jupyter_server_config.py
+```
+
+添加或取消注释以下配置项：
+
+```python
+c.ServerApp.ip = '0.0.0.0'                  # 接收任意 IP 访问
+c.ServerApp.port = 8890                     # 设置端口号
+c.ServerApp.open_browser = False            # 启动时不自动打开浏览器
+c.ServerApp.allow_origin = '*'              # 允许所有来源（仅限内网使用）
+c.ServerApp.password_required = True
+c.ServerApp.allow_password_change = False
+c.ServerApp.default_url = '/lab'            # 启动后默认进入 Lab 界面
+```
+
+## 🚀 5. 启动 Jupyter Lab 测试
+
+```bash
+jupyter lab --config=~/.jupyter/jupyter_server_config.py
+```
+
+使用浏览器访问：
+```
+http://<Jetson-IP>:8890
+```
+例如：
+```
+http://192.168.1.123:8890
+```
+
+---
+
+## 🔁 6. 设置开机自启动（使用 systemd）
+
+### ① 查看 jupyter 可执行路径
+
+```bash
+which jupyter
+```
+
+示例输出：
+```
+/home/jetson/.local/bin/jupyter
+```
+
+### ② 创建启动服务文件
+
+```bash
+sudo nano /etc/systemd/system/jupyter.service
+```
+
+粘贴以下内容（注意替换用户名和路径）：
+
+```ini
+[Unit]
+Description=Jupyter Lab
+After=network.target
+
+[Service]
+Type=simple
+User=jetson
+ExecStart=/home/jetson/.local/bin/jupyter lab --config=/home/jetson/.jupyter/jupyter_server_config.py
+WorkingDirectory=/home/jetson
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### ③ 启用服务并启动
+
+```bash
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable jupyter.service
+sudo systemctl start jupyter.service
+```
+
+### ④ 检查状态
+
+```bash
+sudo systemctl status jupyter.service
+```
+
+如果看到 `active (running)`，说明服务已启动成功。
+
+---
+
+## 📡 7. 浏览器访问 Jupyter Lab
+
+在同一 WiFi 局域网下的 Windows 电脑中打开浏览器，访问：
+
+```
+http://<Jetson-IP>:8890/lab
+```
+
+输入你设置的密码即可访问。
+
+---
+
+## 🛠 8. 调试与日志查看
+
+- 查看服务运行日志：
+
+```bash
+journalctl -u jupyter.service -f
+```
+
+- 修改配置后需重新加载：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart jupyter.service
+```
+
+---
+
+## 🧯 常见问题排查
+
+| 问题 | 可能原因 |
+|------|----------|
+| 无法访问页面 | 检查 Jetson 是否连上 WiFi，防火墙是否阻止了端口 |
+| 浏览器打不开 | 可能服务未启动、端口号不对、IP 错误 |
+| 服务未运行 | 查看日志排查 `journalctl -u jupyter.service -f` |
+
+---
+
+## ✅ 效果展示
+
+- ✅ Jetson Nano 启动后自动运行 Jupyter Lab
+- ✅ 远程浏览器通过 WiFi 访问 Jetson 上的 Jupyter Lab
+- ✅ 密码保护，支持多终端登录
+</details>
 
 ## 其他编程语言支持
 

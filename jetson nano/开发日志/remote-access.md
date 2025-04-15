@@ -402,6 +402,17 @@ Visual Studio Code提供了强大的远程开发功能，非常适合Jetson Nano
    sudo reboot
    ```
 
+4.**查看当前运行级别（是否在图形界面）**
+   ```bash
+   systemctl get-default
+   ```
+   输出为：
+   ```
+   graphical.target 👉 图形界面默认启用
+
+   multi-user.target 👉 命令行模式（无图形界面）
+   ```
+
 ## 安全注意事项
 
 远程访问涉及网络安全，请注意以下几点：

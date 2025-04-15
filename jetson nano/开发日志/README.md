@@ -231,3 +231,32 @@ USB摄像头应自动识别。CSI摄像头需确保连接正确并运行<code>v4
     <p>📝 本文档不断完善中 | 欢迎提出建议和改进意见</p>
     <p>最后更新: 2025年3月31日</p>
 </div> 
+
+
+
+
+正常使用
+1.配置烧录系统
+2.配置网络
+3.配置远程连接
+4.配置风扇控制
+
+开发配置
+1.配置开发环境(python,jupyter)
+
+jetson硬件库
+1.配置gpio
+2.配置pwm
+3.配置adc
+4.配置i2c
+5.摄像头
+6.传感器
+
+linux的cuda,opencv,tensorflow,pytorch,等
+1.cuda
+2.opencv
+3.tensorflow
+4.pytorch
+
+
+

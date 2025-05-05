@@ -2,6 +2,8 @@
 
 ---
 
+[参考教程](https://www.bilibili.com/video/BV13X9yY9EEH/?spm_id_from=333.337.search-card.all.click&vd_source=60fccd43626413093269dbf5a9459d33)
+
 <div class="section" id="initial-setup">
 
 ## 📌 初始配置

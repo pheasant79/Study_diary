@@ -75,8 +75,14 @@ pip install torch torchvision
 
 ## 🟢 一句话总结
 
-> **PyTorch 是通用的深度学习引擎，支持图像、文本、语音等多种任务；YOLO 是基于 PyTorch 的图像检测模型；CUDA 是 GPU 加速的底层工具，只有使用 GPU 时才需要。**
+> **PyTorch 是通用的深度学习引擎，支持图像、文本、语音等多种任务；
+> YOLO 是基于 PyTorch 的图像检测模型；
+> CUDA 是 GPU 加速的底层工具，只有使用 GPU 时才需要。**
+>
+> 也就是:
+> 使用yolo时,不用cuda,可以只使用cpu
+> 而cuda则是类似于c语言的gcc(编译器),用于给gpu看的编译器和工具
+> 而pytorch则是神经网络的底层库,有卷积,池化,全连接等操作函数
+> yolo的底层中就有pytorch
 
 ---
-
-如果你需要一个 PyTorch 示例代码（如图像分类或文本识别），我可以附上。是否需要？

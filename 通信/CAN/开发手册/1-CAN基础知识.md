@@ -1,4 +1,4 @@
-# CAN总线基础知识
+.6# CAN总线基础知识
 
 <div align="center">
 
@@ -10,12 +10,18 @@
 
 ## 📑 目录
 
-- [CAN总线基础知识](#can总线基础知识)
-  - [CAN总线基本概念](#can总线基本概念)
-  - [CAN总线电平特性](#can总线电平特性)
-  - [CAN总线协议帧类型](#can总线协议帧类型)
-  - [CAN总线仲裁机制](#can总线仲裁机制)
-  - [CAN总线错误处理](#can总线错误处理)
+- [📑 目录](#-目录)
+- [CAN总线基本概念](#can总线基本概念)
+- [CAN总线电平特性](#can总线电平特性)
+- [CAN总线位同步机制](#can总线位同步机制)
+  - [为什么需要位同步？](#为什么需要位同步)
+  - [位时序结构](#位时序结构)
+  - [同步机制详解](#同步机制详解)
+  - [采样点](#采样点)
+  - [应用实例](#应用实例)
+- [CAN总线协议帧类型](#can总线协议帧类型)
+- [CAN总线仲裁机制](#can总线仲裁机制)
+- [CAN总线错误处理](#can总线错误处理)
 
 ---
 
@@ -70,6 +76,159 @@ CAN协议的主要特点：
 
 </div>
 
+## CAN总线位同步机制
+
+<div class="bit-timing-box" style="background-color:#e8f4f8;padding:20px;border-radius:8px;border-left:5px solid #0078D7;margin:15px 0;">
+
+> **核心概念**：CAN网络没有单独的时钟线，各节点必须通过位同步机制确保在正确的时刻采样位值。
+
+### 为什么需要位同步？
+
+<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;margin:10px 0;">
+CAN总线采用<b>NRZ</b>（非归零）编码方式，不同节点间存在时钟偏差和信号传播延迟，使得：
+
+- 发送节点与接收节点的时钟不完全同步
+- 信号在线缆中传播需要时间
+- 不同的接收节点距离发送节点的距离不同
+- 电子元件的温度变化会引起时钟漂移
+
+如果没有位同步机制，长时间传输将导致位错位，使接收方在错误的时间点采样。
+</div>
+
+### 位时序结构
+
+CAN协议将每个位时间划分为四个关键段落：
+
+<table style="width:100%;border-collapse:collapse;margin:15px 0;text-align:center;">
+<tr style="background-color:#0078D7;color:white;">
+  <th style="padding:8px;border:1px solid #ddd;">段名</th>
+  <th style="padding:8px;border:1px solid #ddd;">长度(TQ)</th>
+  <th style="padding:8px;border:1px solid #ddd;">可调整性</th>
+  <th style="padding:8px;border:1px solid #ddd;">功能</th>
+</tr>
+<tr>
+  <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">同步段<br>(SYNC_SEG)</td>
+  <td style="padding:8px;border:1px solid #ddd;">1</td>
+  <td style="padding:8px;border:1px solid #ddd;">固定</td>
+  <td style="padding:8px;border:1px solid #ddd;">预期发生边沿跳变的区域</td>
+</tr>
+<tr style="background-color:#f2f2f2;">
+  <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">传播段<br>(PROP_SEG)</td>
+  <td style="padding:8px;border:1px solid #ddd;">1-8</td>
+  <td style="padding:8px;border:1px solid #ddd;">配置固定</td>
+  <td style="padding:8px;border:1px solid #ddd;">补偿网络物理延迟</td>
+</tr>
+<tr>
+  <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">相位段1<br>(PHASE_SEG1)</td>
+  <td style="padding:8px;border:1px solid #ddd;">1-8</td>
+  <td style="padding:8px;border:1px solid #ddd;">可延长</td>
+  <td style="padding:8px;border:1px solid #ddd;">补偿边沿延迟，可调整</td>
+</tr>
+<tr style="background-color:#f2f2f2;">
+  <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">相位段2<br>(PHASE_SEG2)</td>
+  <td style="padding:8px;border:1px solid #ddd;">1-8</td>
+  <td style="padding:8px;border:1px solid #ddd;">可缩短</td>
+  <td style="padding:8px;border:1px solid #ddd;">处理早到边沿，可调整</td>
+</tr>
+</table>
+
+```
+┌─────────────────────── 1个位时间 ──────────────────────┐
+┌────┬──────────────┬──────────────┬──────────────┐
+│SYNC│   PROP_SEG   │  PHASE_SEG1  │  PHASE_SEG2  │
+└────┴──────────────┴──────────────┴──────────────┘
+       ↑                            ↑
+    边沿检测点                     采样点
+```
+
+> 💡 **TQ（Time Quantum）**：时间量子，是CAN总线位时序的基本时间单位，由CAN控制器的输入时钟分频得到。
+
+### 同步机制详解
+
+CAN总线使用两种同步技术确保所有节点协调一致：
+
+<div style="display:flex;margin:15px 0;">
+<div style="flex:1;background-color:#e1f5fe;padding:15px;border-radius:5px;margin-right:10px;">
+<h4 style="margin-top:0;">1️⃣ 硬同步（Hard Synchronization）</h4>
+
+- **触发条件**：
+  - 总线空闲状态到数据传输的转换
+  - 每个帧的起始位（SOF）
+
+- **工作原理**：
+  - 检测到隐性→显性跳变时
+  - 立即重置所有节点的位时序计数器
+  - 所有节点重新从SYNC_SEG开始计时
+
+- **适用场景**：
+  - 帧的开始
+  - 长时间总线空闲后的首次通信
+  
+- **总结**
+  - 在**帧开始**时,对所有设备的位时序计数器进行重置,并从SYNC_SEG开始计时
+</div>
+
+<div style="flex:1;background-color:#fff8e1;padding:15px;border-radius:5px;">
+<h4 style="margin-top:0;">2️⃣ 再同步（Resynchronization）</h4>
+
+- **触发条件**：
+  - 位传输过程中的边沿跳变
+  - 隐性→显性的转换（只有这种跳变可被可靠检测）
+
+- **工作原理**：
+  - **边沿提前**：减少PHASE_SEG2长度
+  - **边沿延迟**：增加PHASE_SEG1长度
+  - 调整量受SJW限制（Synchronization Jump Width）
+
+- **适用场景**：
+  - 帧传输期间的连续位同步
+  - 补偿时钟漂移和相位错误
+  
+- **总结**
+  - 在**位传输过程**中,如果检测到边沿跳变,则根据跳变方向调整PHASE_SEG1或PHASE_SEG2的长度,以补偿时钟漂移和相位错误
+</div>
+</div>
+
+<div style="background-color:#f3e5f5;padding:15px;border-radius:5px;margin:15px 0;">
+<h4 style="margin-top:0;">同步跳跃宽度（SJW）</h4>
+
+- **定义**：再同步过程中允许的最大调整量，以TQ为单位
+- **范围**：1-4个TQ
+- **作用**：限制单次同步调整的幅度，避免过度校正
+- **配置**：在初始化CAN控制器时设置，需根据网络拓扑和物理特性选择适当值
+</div>
+
+### 采样点
+
+<div style="background-color:#fce4ec;padding:15px;border-radius:5px;margin:15px 0;">
+采样点位于PHASE_SEG1和PHASE_SEG2之间，是CAN控制器读取总线电平以确定位值的精确时刻。
+
+- **单点采样**：在采样点进行一次采样
+- **三点采样**：在采样点及其前后各进行一次采样，采用多数投票法决定位值
+- **典型位置**：通常位于位时间的70%-80%处，可根据总线长度和波特率进行优化
+</div>
+
+### 应用实例
+
+<div style="background-color:#e8f5e9;padding:15px;border-radius:5px;margin:15px 0;">
+<h4 style="margin-top:0;">🚗 汽车CAN网络配置示例</h4>
+
+| 参数 | 高速CAN (500kbps) | 低速CAN (125kbps) |
+|------|-------------------|-------------------|
+| TQ | 125ns | 500ns |
+| SYNC_SEG | 1 TQ | 1 TQ |
+| PROP_SEG | 3 TQ | 3 TQ |
+| PHASE_SEG1 | 3 TQ | 3 TQ |
+| PHASE_SEG2 | 3 TQ | 3 TQ |
+| SJW | 2 TQ | 2 TQ |
+| 采样点位置 | 75% | 75% |
+| 总位时间 | 10 TQ (2μs) | 10 TQ (8μs) |
+
+这种配置能够容忍最大40米的网络长度（高速CAN）和160米（低速CAN）。
+</div>
+
+</div>
+
 ## CAN总线协议帧类型
 
 <div style="overflow-x:auto;">
@@ -79,6 +238,23 @@ CAN协议的主要特点：
 | 扩展帧: | 起始位 | 仲裁场 (ID(29位) + RTR) | 控制场 (IDE + r1 + r0 + DLC) | 数据场 (0-8字节) | CRC场 (15位CRC + 分界符) | ACK场 | 结束符 | 帧间间隔 |
 
 </div>
+
+<details>
+<summary>📋 各种位的详细说明</summary>
+
+- **ID**: 11位ID(0-7FF) 或 29位ID(0-7FFFFFFF)
+- **RTR**: 0-数据帧, 1-远程帧
+- **IDE**: 0-标准帧, 1-扩展帧
+- **r1**: 保留位，固定为0（仅在扩展帧中使用）
+- **r0**: 保留位，固定为0（仅在扩展帧中使用）
+- **DLC**: 数据长度代码，0-8字节
+- **数据**: 0-8字节的数据内容
+- **CRC**: 15位循环冗余校验码，用于检测传输错误
+- **ACK**: 应答位，接收节点正确接收后置为显性(0)
+- **结束符**: 7个连续的隐性位(1)
+- **帧间间隔**: 至少3个隐性位，表示两帧之间的最小间隔
+
+</details>
 
 <details>
 <summary>📋 各种帧类型的详细说明</summary>
